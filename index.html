@@ -28,7 +28,10 @@
         <p class="text-xs text-slate-400">Online Technical Assessment Portal</p>
       </div>
     </div>
-    <div>
+    <div class="flex gap-2">
+      <button onclick="clearMyData()" class="text-xs bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800 px-3 py-1.5 rounded transition">
+        Reset Data (Testing)
+      </button>
       <button id="toggle-admin-btn" onclick="toggleAdminLogin()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded transition">
         Staff Login
       </button>
@@ -69,10 +72,10 @@
         </div>
 
         <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded text-amber-300 text-xs leading-relaxed mt-4">
-          ⚠️️ <b>Instructions:</b> Total time is 30 mins. Switching tabs or opening dev tools will submit your test. Copy/paste is strictly disabled.
+          ⚠ <b>Instructions:</b> Total time is 30 mins. Switching tabs or opening dev tools will submit your test. Copy/paste is strictly disabled.
         </div>
 
-        <button onclick="startExam()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded text-sm transition mt-2">
+        <button type="button" onclick="startExam()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded text-sm transition mt-2 cursor-pointer">
           Start Examination
         </button>
       </div>
@@ -100,16 +103,16 @@
           <span id="q-category" class="text-xs font-bold uppercase tracking-wider text-indigo-400"></span>
           <span id="q-counter" class="text-xs text-slate-400"></span>
         </div>
-        <div id="q-text" class="text-base font-medium text-slate-200 mb-4 whitespace-pre-wrap leading-relaxed"></div>
+        <div id="q-text" class="text-base font-medium text-slate-200 mb-4 whitespace-pre-wrap leading-relaxed font-mono bg-slate-900/40 p-3 rounded border border-slate-700/50"></div>
         <div id="options-container" class="space-y-3 mb-6"></div>
       </div>
 
       <!-- Navigation Footer -->
       <div class="flex justify-between items-center pt-4 border-t border-slate-700">
-        <button id="prev-btn" onclick="prevQuestion()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-4 py-2 rounded disabled:opacity-30">Previous</button>
+        <button type="button" id="prev-btn" onclick="prevQuestion()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-4 py-2 rounded disabled:opacity-30 cursor-pointer">Previous</button>
         <div class="flex gap-2">
-          <button id="next-btn" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2 rounded">Next</button>
-          <button onclick="submitExam('Candidate submitted manually.')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-5 py-2 rounded font-semibold">Submit Test</button>
+          <button type="button" id="next-btn" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2 rounded cursor-pointer">Next</button>
+          <button type="button" onclick="submitExam('Candidate submitted manually.')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-5 py-2 rounded font-semibold cursor-pointer">Submit Test</button>
         </div>
       </div>
     </div>
@@ -135,8 +138,8 @@
           <p class="text-xs text-slate-400">LOGIX Exam real-time candidate scores and percentages</p>
         </div>
         <div class="flex gap-2">
-          <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded">Export CSV</button>
-          <button onclick="exitAdmin()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-3 py-2 rounded">Exit Admin</button>
+          <button type="button" onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded">Export CSV</button>
+          <button type="button" onclick="exitAdmin()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-3 py-2 rounded">Exit Admin</button>
         </div>
       </div>
 
@@ -164,12 +167,104 @@
     LOGIX &copy; Department of Information Technology. Anti-cheating proctored environment active.
   </footer>
 
+  <!-- Optional questions.js import (falls back to embedded questions if not present) -->
   <script src="questions.js"></script>
-  <script>
-    // --- QUESTIONS BANK (C, C++, PYTHON - MEDIUM TO HARD) ---
-    
 
-    // --- START EXAM ---
+  <script>
+    // --- 1. UTILITY FUNCTIONS (Defined first) ---
+    function hashString(str) {
+      var hash = 0;
+      if (!str || str.length === 0) return hash;
+      for (var i = 0; i < str.length; i++) {
+        var char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function seededShuffle(arr, seed) {
+      var copy = arr.slice();
+      var s = seed;
+      for (var i = copy.length - 1; i > 0; i--) {
+        s = (s * 9301 + 49297) % 233280;
+        var j = Math.floor((s / 233280) * (i + 1));
+        var temp = copy[i];
+        copy[i] = copy[j];
+        copy[j] = temp;
+      }
+      return copy;
+    }
+
+    // --- 2. GLOBAL STATE VARIABLES ---
+    var currentCandidate = null;
+    var shuffledQuestions = [];
+    var currentIdx = 0;
+    var candidateAnswers = {};
+    var timerSeconds = 30 * 60;
+    var timerInterval = null;
+    var warnings = 0;
+
+    // --- 3. QUESTION BANK FALLBACK ---
+    // If questions.js loaded RAW_QUESTIONS, it will be used; otherwise this fallback is used.
+    if (typeof RAW_QUESTIONS === 'undefined') {
+      window.RAW_QUESTIONS = [
+        { lang: "C Programming", q: "What is the output of:\nint x = 5;\nint y = x++ + ++x;\nprintf(\"%d %d\", x, y);", options: ["7 12", "7 13", "Undefined Behavior", "6 12"], answer: 2 },
+        { lang: "C Programming", q: "What is the output?\nint a = 10, b = 20;\nprintf(\"%d\", a < b ? a++ : b++);\nprintf(\" %d\", a);", options: ["10 11", "10 10", "11 11", "20 10"], answer: 0 },
+        { lang: "C Programming", q: "What does this pointer arithmetic print?\nint arr[] = {10, 20, 30, 40, 50};\nint *ptr = arr;\nprintf(\"%d \", *(ptr + 3));\nprintf(\"%d\", *ptr++);", options: ["40 10", "40 20", "30 10", "30 20"], answer: 0 },
+        { lang: "C Programming", q: "Output of sizeof on array parameter on 64-bit architecture?\nvoid func(int arr[10]) { printf(\"%lu\", sizeof(arr)); }", options: ["40", "8", "4", "Compile Error"], answer: 1 },
+        { lang: "C Programming", q: "What does printf return in C?\nint c = printf(\"LOGIX2026\");\nprintf(\" %d\", c);", options: ["LOGIX2026 9", "LOGIX2026 0", "LOGIX2026 1", "LOGIX2026 8"], answer: 0 },
+        { lang: "C Programming", q: "Value of ptr2 - ptr1?\nint arr[5] = {1, 2, 3, 4, 5};\nint *ptr1 = &arr[1];\nint *ptr2 = &arr[4];\nprintf(\"%td\", ptr2 - ptr1);", options: ["12", "3", "6", "Depends on architecture"], answer: 1 },
+        { lang: "C Programming", q: "Behavior of modifying string literal:\nchar *str = \"Hello\";\nstr[0] = 'M';", options: ["Mello", "Compilation error", "Undefined Behavior (Segfault)", "Warning"], answer: 2 },
+        { lang: "C Programming", q: "Evaluation of macro:\n#define SQUARE(x) x * x\nint res = SQUARE(2 + 3);", options: ["25", "11", "13", "10"], answer: 1 },
+        { lang: "C Programming", q: "Recursion output?\nvoid count(int n) {\n  if(n<=0) return;\n  count(n-1);\n  printf(\"%d \", n);\n  count(n-1);\n}\ncount(3);", options: ["1 2 1 3 1 2 1", "3 2 1 1 2 3", "1 2 3 2 1", "3 2 1 2 3"], answer: 0 },
+        { lang: "C Programming", q: "Size of struct with padding on 64-bit:\nstruct Node { char a; int b; char c; };", options: ["6 bytes", "8 bytes", "12 bytes", "16 bytes"], answer: 2 },
+        { lang: "C Programming", q: "Output of:\nint main() {\n  static int x = 3;\n  if (--x) { main(); printf(\"%d \", x); }\n}", options: ["0 0", "1 2", "0 1 2", "Infinite recursion"], answer: 0 },
+        { lang: "C Programming", q: "Output of bitwise operation:\nint x = 8;\nprintf(\"%d\", (x & (x - 1)));", options: ["8", "7", "0", "1"], answer: 2 },
+        { lang: "C Programming", q: "Meaning of: int (*fp)(int, int);", options: ["Function returning int pointer array", "Pointer to function taking two ints returning int", "Function taking pointers returning int", "Syntax error"], answer: 1 },
+        { lang: "C Programming", q: "Output of switch statement:\nint x = 2;\nswitch(x) {\n  case 1: printf(\"A\");\n  case 2: printf(\"B\");\n  case 3: printf(\"C\");\n  default: printf(\"D\");\n}", options: ["B", "BCD", "BC", "B C D"], answer: 1 },
+        { lang: "C Programming", q: "Double free result:\nint *p = malloc(sizeof(int));\nfree(p);\nfree(p);", options: ["No effect", "Memory cleaned", "Undefined Behavior (Double Free)", "Compiler Error"], answer: 2 },
+        { lang: "C Programming", q: "Output of signed vs unsigned comparison:\nint x = -1;\nunsigned int y = 1;\nif (x < y) printf(\"LESS\"); else printf(\"GREATER\");", options: ["LESS", "GREATER", "Compile Error", "Undefined"], answer: 1 },
+        { lang: "C Programming", q: "Output of: printf(\"%d\", 5[\"abcdef\"]);", options: ["Compile Error", "f", "102 (ASCII of f)", "Garbage Value"], answer: 2 },
+
+        { lang: "C++ (OOP)", q: "What happens if base destructor is NOT virtual and derived is deleted via base pointer?", options: ["Both destructors run correctly", "Undefined behavior; Derived destructor skipped", "Compile time error", "Derived destructor runs first"], answer: 1 },
+        { lang: "C++ (Polymorphism)", q: "Output of:\nclass A { public: virtual void s(){cout<<\"A\";} };\nclass B : public A { public: void s(){cout<<\"B\";} };\nA *a = new B(); a->s();", options: ["A", "B", "AB", "Compile Error"], answer: 1 },
+        { lang: "C++ (References)", q: "Which statement about C++ references is FALSE?", options: ["References cannot be NULL", "References can be reseated after initialization", "References share memory address with aliased variable", "Reference must be initialized"], answer: 1 },
+        { lang: "C++ (Constructors)", q: "Output of:\nclass S { public: S(){cout<<\"1 \";} S(const S&){cout<<\"2 \";} };\nS a; S b = a;", options: ["1 1", "1 2", "2 1", "1"], answer: 1 },
+        { lang: "C++ (Smart Pointers)", q: "Difference between unique_ptr and shared_ptr?", options: ["unique_ptr cannot be moved", "shared_ptr has reference counting; unique_ptr enforces single ownership", "shared_ptr is faster with zero overhead", "unique_ptr can be cloned"], answer: 1 },
+        { lang: "C++ (Templates)", q: "Return type of decltype(auto) deduced from (x) where int x = 10;?", options: ["int", "int&", "const int", "int&&"], answer: 1 },
+        { lang: "C++ (Diamond Problem)", q: "In C++, how is the diamond problem solved in multiple inheritance?", options: ["Virtual base classes", "Abstract classes", "Friend inheritance", "Not allowed"], answer: 0 },
+        { lang: "C++ (Operator Overload)", q: "Which operator CANNOT be overloaded in C++?", options: ["+", "[]", "::", "()"], answer: 2 },
+        { lang: "C++ (Static)", q: "Where is a class static member variable stored and initialized?", options: ["Stack inside constructor", "Heap dynamically", "Data Segment, defined outside class", "VTable"], answer: 2 },
+        { lang: "C++ (STL)", q: "Average time complexity of insert/search in std::unordered_map?", options: ["O(log N)", "O(1)", "O(N)", "O(N log N)"], answer: 1 },
+        { lang: "C++ (Exceptions)", q: "What happens if an exception is thrown in destructor during stack unwinding?", options: ["Caught by main", "std::terminate is invoked immediately", "Destructor skipped", "Compile error"], answer: 1 },
+        { lang: "C++ (Keywords)", q: "What does the mutable keyword allow?", options: ["Changes variable type dynamically", "Allows member to be modified in const member function", "Prevents optimization", "Thread safe"], answer: 1 },
+        { lang: "C++ (Move)", q: "What does std::move(obj) actually do?", options: ["Moves data blocks", "Casts obj to an rvalue reference (T&&)", "Clones object", "Clears heap memory"], answer: 1 },
+        { lang: "C++ (Memory)", q: "Size of empty class in C++ (sizeof(Empty))?", options: ["0 bytes", "1 byte", "4 bytes", "8 bytes"], answer: 1 },
+        { lang: "C++ (Virtual)", q: "Can a virtual function be declared inline in C++?", options: ["No error", "Yes, but inlining ignored when called polymorphically", "Always inlined", "Only if private"], answer: 1 },
+        { lang: "C++ (Lambda)", q: "What does [&] capture in a lambda?", options: ["All automatic variables by reference", "All by value", "Only globals", "Syntax error"], answer: 0 },
+        { lang: "C++ (Namespace)", q: "Benefit of anonymous namespace in C++?", options: ["Global across files", "Internal linkage to translation unit (replaces static)", "Faster compilation", "Thread locking"], answer: 1 },
+
+        { lang: "Python", q: "Output of mutable default argument:\ndef f(v, l=[]):\n  l.append(v)\n  return l\nprint(f(1))\nprint(f(2))", options: ["[1] then [2]", "[1] then [1, 2]", "[1] then [[1],[2]]", "TypeError"], answer: 1 },
+        { lang: "Python", q: "Output of:\nx = [1, 2, 3]\ny = x\ny += [4]\nprint(x is y, x)", options: ["True [1, 2, 3, 4]", "False [1, 2, 3, 4]", "False [1, 2, 3]", "True [1, 2, 3]"], answer: 0 },
+        { lang: "Python", q: "Output of:\nx = [1, 2, 3]\ny = x\ny = y + [4]\nprint(x is y, x)", options: ["True [1, 2, 3, 4]", "False [1, 2, 3]", "False [1, 2, 3, 4]", "True [1, 2, 3]"], answer: 2 },
+        { lang: "Python", q: "Output of closure in list comprehension:\nfuncs = [lambda x: x + i for i in range(3)]\nprint([f(1) for f in funcs])", options: ["[1, 2, 3]", "[2, 3, 4]", "[3, 3, 3]", "[4, 4, 4]"], answer: 2 },
+        { lang: "Python", q: "What happens on:\nt = (1, 2, [3, 4])\nt[2].append(5)", options: ["TypeError", "Appends 5 successfully to list inside tuple", "New tuple", "SyntaxWarning"], answer: 1 },
+        { lang: "Python", q: "What happens on:\nt = (1, 2, [3, 4])\nt[2] += [5]", options: ["Executes normally", "Raises TypeError, but 5 is appended to list", "Raises TypeError and list unchanged", "SyntaxError"], answer: 1 },
+        { lang: "Python", q: "Output of dict key hashing with bool and int:\nd = {}\nd[1] = 'A'\nd[True] = 'B'\nd[1.0] = 'C'\nprint(len(d), d[1])", options: ["3 C", "1 C", "2 B", "1 A"], answer: 1 },
+        { lang: "Python", q: "Python Method Resolution Order (MRO) algorithm?", options: ["DFS", "BFS", "C3 Linearization", "Random"], answer: 2 },
+        { lang: "Python", q: "What is GIL in CPython?", options: ["Mutex preventing multiple native threads from executing bytecodes simultaneously", "Lock on globals only", "I/O race condition preventer", "GC supervisor"], answer: 0 },
+        { lang: "Python", q: "Output of: print(''.join(reversed('logix')))", options: ["xigol", "logix", "TypeError", "['x','i','g','o','l']"], answer: 0 },
+        { lang: "Python", q: "Difference between @classmethod and @staticmethod?", options: ["@classmethod receives cls; @staticmethod receives neither self nor cls", "@staticmethod modifies class state", "@classmethod cannot be called on instances", "No difference"], answer: 0 },
+        { lang: "Python", q: "Output of single-element tuple syntax:\na = (1)\nb = (1,)\nprint(type(a), type(b))", options: ["tuple tuple", "int tuple", "tuple int", "int int"], answer: 1 },
+        { lang: "Python", q: "What does __slots__ attribute in class do?", options: ["Restricts method names", "Prevents __dict__ creation per instance, saving memory", "Thread safe attributes", "Makes attributes private"], answer: 1 },
+        { lang: "Python", q: "Output of exhausted generator:\ngen = (x**2 for x in range(3))\nprint(list(gen))\nprint(list(gen))", options: ["[0, 1, 4] then [0, 1, 4]", "[0, 1, 4] then []", "[0, 1, 4] then None", "GeneratorError"], answer: 1 },
+        { lang: "Python", q: "Output in standard interactive CPython session:\na = 256; b = 256\nc = 257; d = 257\nprint(a is b, c is d)", options: ["True True", "True False", "False False", "False True"], answer: 1 },
+        { lang: "Python", q: "Output of bool('False') in Python?", options: ["False", "True", "None", "ValueError"], answer: 1 }
+      ];
+    }
+
+    // --- 4. START EXAM ---
     function startExam() {
       const name = document.getElementById('cand-name').value.trim();
       const dept = document.getElementById('cand-dept').value.trim();
@@ -184,7 +279,7 @@
       // Check if already completed
       const submissions = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
       if (submissions[reg]) {
-        alert("You have already completed this assessment. Re-takes are not allowed.");
+        alert("You have already completed this assessment. Re-takes are not allowed for Register Number: " + reg);
         return;
       }
 
@@ -204,18 +299,17 @@
       history.pushState(null, "", location.href);
       window.onpopstate = () => {
         history.pushState(null, "", location.href);
-        alert("Back button is disabled during the exam.");
       };
 
       // Anti-cheat listeners
       initAntiCheat();
 
-      // Start timer
+      // Start exam
       renderQuestion();
       startTimer();
     }
 
-    // --- ANTI CHEATING GUARDS ---
+    // --- 5. ANTI CHEATING GUARDS ---
     function initAntiCheat() {
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('copy', e => e.preventDefault());
@@ -246,7 +340,7 @@
       }
     }
 
-    // --- TIMER ---
+    // --- 6. TIMER ---
     function startTimer() {
       timerInterval = setInterval(() => {
         timerSeconds--;
@@ -262,7 +356,7 @@
       }, 1000);
     }
 
-    // --- QUESTION RENDERING ---
+    // --- 7. QUESTION RENDERING ---
     function renderQuestion() {
       const q = shuffledQuestions[currentIdx];
       document.getElementById('q-category').innerText = q.lang;
@@ -275,12 +369,13 @@
       q.options.forEach((opt, idx) => {
         const isSelected = candidateAnswers[currentIdx] === idx;
         const btn = document.createElement('button');
-        btn.className = `w-full text-left p-3.5 rounded-lg border text-sm transition flex items-center justify-between ${
+        btn.type = 'button';
+        btn.className = `w-full text-left p-3.5 rounded-lg border text-sm transition flex items-center justify-between cursor-pointer ${
           isSelected 
-            ? 'bg-indigo-600/20 border-indigo-500 text-white font-medium' 
+            ? 'bg-indigo-600/30 border-indigo-500 text-white font-medium ring-1 ring-indigo-500' 
             : 'bg-slate-900/60 border-slate-700 text-slate-300 hover:bg-slate-700'
         }`;
-        btn.innerHTML = `<span>${opt}</span> <span class="text-xs ${isSelected ? 'text-indigo-400' : 'text-slate-500'}">Option ${String.fromCharCode(65 + idx)}</span>`;
+        btn.innerHTML = `<span>${opt}</span> <span class="text-xs ${isSelected ? 'text-indigo-400 font-bold' : 'text-slate-500'}">Option ${String.fromCharCode(65 + idx)}</span>`;
         btn.onclick = () => {
           candidateAnswers[currentIdx] = idx;
           renderQuestion();
@@ -306,11 +401,10 @@
       }
     }
 
-    // --- SUBMISSION ---
+    // --- 8. SUBMISSION ---
     function submitExam(reason) {
       clearInterval(timerInterval);
 
-      // Calculate score silently
       let score = 0;
       shuffledQuestions.forEach((q, idx) => {
         if (candidateAnswers[idx] === q.answer) score++;
@@ -318,7 +412,6 @@
 
       const percentage = ((score / shuffledQuestions.length) * 100).toFixed(1);
 
-      // Save to staff database
       const submissions = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
       submissions[currentCandidate.reg] = {
         name: currentCandidate.name,
@@ -334,14 +427,13 @@
       };
       localStorage.setItem('logix_submissions', JSON.stringify(submissions));
 
-      // Show completion page without marks
       document.getElementById('exam-screen').classList.add('hidden');
       document.getElementById('comp-reg').innerText = currentCandidate.reg;
       document.getElementById('comp-name').innerText = currentCandidate.name;
       document.getElementById('completion-screen').classList.remove('hidden');
     }
 
-    // --- ADMIN PANEL ---
+    // --- 9. ADMIN PANEL ---
     function toggleAdminLogin() {
       const pin = prompt("Enter Staff Admin PIN:");
       if (pin === "admin123") {
@@ -402,6 +494,14 @@
       a.href = url;
       a.download = "LOGIX_Results.csv";
       a.click();
+    }
+
+    function clearMyData() {
+      if (confirm("Reset submissions data for testing?")) {
+        localStorage.removeItem('logix_submissions');
+        alert("Data cleared. You can now re-test with any Register Number.");
+        location.reload();
+      }
     }
   </script>
 </body>
