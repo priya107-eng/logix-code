@@ -4,61 +4,65 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LOGIX - Dept of Information Technology</title>
-  <!-- Tailwind CSS CDN for instant styling without npm -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Disable text selection & copy */
     body {
       user-select: none;
       -webkit-user-select: none;
     }
-    pre, code {
-      user-select: none;
-    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between font-sans">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
 
-  <!-- Header -->
-  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center shadow-md">
-    <div class="flex items-center space-x-3">
-      <div class="bg-indigo-600 text-white font-extrabold px-3 py-1 rounded text-xl tracking-wider">LOGIX</div>
-      <div>
-        <h1 class="text-sm font-semibold tracking-wide text-indigo-400 uppercase">Dept of Information Technology</h1>
-        <p class="text-xs text-slate-400">Online Technical Assessment Portal</p>
-      </div>
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="bg-[#0b1329] text-white px-8 py-3.5 flex justify-between items-center shadow-lg border-b border-slate-800">
+    <div>
+      <h1 class="text-lg font-bold tracking-wide flex items-center gap-2">
+        <span class="bg-blue-600 text-xs uppercase px-2 py-0.5 rounded font-black tracking-widest">IT Dept</span>
+        LOGIX Coding Assessment
+      </h1>
+      <p id="top-cand-details" class="text-xs text-slate-400 mt-0.5">
+        Candidate Portal &bull; Department of Information Technology
+      </p>
     </div>
-    <div class="flex gap-2">
-      <button onclick="clearMyData()" class="text-xs bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800 px-3 py-1.5 rounded transition">
-        Reset Data (Testing)
+    <div class="flex items-center gap-4">
+      <button onclick="clearMyData()" class="text-xs bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/80 px-2.5 py-1 rounded transition">
+        Reset Test (Staff)
       </button>
-      <button id="toggle-admin-btn" onclick="toggleAdminLogin()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded transition">
-        Staff Login
+      <button onclick="toggleAdminLogin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded transition">
+        Staff Console
       </button>
+      <div id="timer-badge" class="hidden bg-[#162038] border border-slate-700/60 px-4 py-1.5 rounded-lg flex items-center gap-2">
+        <span class="text-xs font-semibold text-slate-400 tracking-wider">TIME LEFT:</span>
+        <span id="timer-display" class="font-mono text-lg font-extrabold text-amber-400">30:00</span>
+      </div>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="flex-grow flex items-center justify-center p-4">
+  <!-- ================= MAIN VIEW CONTAINER ================= -->
+  <main class="flex-grow flex items-center justify-center p-4 md:p-6">
 
     <!-- 1. LOGIN SCREEN -->
-    <div id="login-screen" class="max-w-md w-full bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl">
-      <h2 class="text-2xl font-bold text-white mb-2 text-center">Candidate Login</h2>
-      <p class="text-xs text-slate-400 mb-6 text-center">Enter your credentials to begin the LOGIX assessment</p>
-      
+    <div id="login-screen" class="max-w-md w-full bg-white p-8 rounded-2xl border border-slate-200 shadow-xl">
+      <div class="text-center mb-6">
+        <div class="inline-block bg-blue-600 text-white font-extrabold px-3 py-1 rounded-lg text-lg tracking-wider mb-2">LOGIX</div>
+        <h2 class="text-2xl font-bold text-slate-900">Candidate Login</h2>
+        <p class="text-xs text-slate-500 mt-1">Enter your details to generate your seeded question bank</p>
+      </div>
+
       <div class="space-y-4">
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
-          <input type="text" id="cand-name" placeholder="John Doe" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+          <input type="text" id="cand-name" placeholder="e.g. Siva M" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Department</label>
-          <input type="text" id="cand-dept" value="Information Technology" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Department</label>
+          <input type="text" id="cand-dept" value="Information Technology" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Year</label>
-            <select id="cand-year" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Year</label>
+            <select id="cand-year" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="I">1st Year</option>
               <option value="II">2nd Year</option>
               <option value="III" selected>3rd Year</option>
@@ -66,87 +70,136 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Register Number (Unique)</label>
-            <input type="text" id="cand-reg" placeholder="e.g. 7376222IT101" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Register Number (Unique)</label>
+            <input type="text" id="cand-reg" placeholder="e.g. 7376222IT101" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
         </div>
 
-        <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded text-amber-300 text-xs leading-relaxed mt-4">
-          ⚠ <b>Instructions:</b> Total time is 30 mins. Switching tabs or opening dev tools will submit your test. Copy/paste is strictly disabled.
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs leading-relaxed">
+          &bull; <b>Exam Rules:</b> 50 questions | 30 minutes.<br />
+          &bull; Tab switching is restricted. Maximum 3 warnings before auto-submission.<br />
+          &bull; Right-click and copy-paste are disabled.
         </div>
 
-        <button type="button" onclick="startExam()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded text-sm transition mt-2 cursor-pointer">
+        <button type="button" onclick="startExam()" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-md cursor-pointer">
           Start Examination
         </button>
       </div>
     </div>
 
-    <!-- 2. EXAM SCREEN -->
-    <div id="exam-screen" class="hidden w-full max-w-4xl bg-slate-800 rounded-xl border border-slate-700 shadow-2xl p-6">
-      <!-- Status Bar -->
-      <div class="flex flex-wrap justify-between items-center pb-4 border-b border-slate-700 mb-6 gap-4">
+    <!-- 2. EXAM TERMINAL (LAYOUT MATCHING THE SCREENSHOT) -->
+    <div id="exam-screen" class="hidden w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- LEFT: Main Question Card (8 Cols) -->
+      <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 flex flex-col justify-between min-h-[580px]">
         <div>
-          <span id="display-cand" class="font-semibold text-white"></span>
-          <span id="display-reg" class="text-xs text-indigo-400 bg-indigo-950/60 px-2 py-1 rounded ml-2 border border-indigo-800"></span>
+          <!-- Header info -->
+          <div class="flex justify-between items-center pb-4 mb-6">
+            <span id="q-counter-badge" class="text-xs font-bold text-blue-600 tracking-wider uppercase">
+              QUESTION 1 OF 50
+            </span>
+            <div class="flex items-center gap-3">
+              <span id="warning-text" class="text-xs font-semibold text-rose-500">Warnings: 0/3</span>
+              <span id="q-category-pill" class="text-xs bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1 rounded-full font-medium">
+                C Programming
+              </span>
+            </div>
+          </div>
+
+          <!-- Question Content -->
+          <div id="q-text" class="text-lg font-semibold text-slate-900 leading-relaxed mb-6 whitespace-pre-wrap font-sans">
+            Question text goes here
+          </div>
+
+          <!-- Options List (Radio Card Style) -->
+          <div id="options-container" class="space-y-3.5 mb-8"></div>
         </div>
-        <div class="flex items-center gap-4">
-          <div class="text-xs text-rose-400 font-medium" id="warning-text">Warnings: 0/3</div>
-          <div class="bg-slate-900 px-4 py-2 rounded-lg border border-slate-700 text-lg font-mono font-bold text-amber-400" id="timer-display">
-            30:00
+
+        <!-- Footer Buttons -->
+        <div class="flex justify-between items-center pt-6 border-t border-slate-100">
+          <button type="button" id="prev-btn" onclick="prevQuestion()" class="px-6 py-2.5 rounded-lg text-sm font-semibold border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-600 disabled:opacity-40 transition cursor-pointer">
+            Previous
+          </button>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="confirmSubmit()" class="px-6 py-2.5 rounded-lg text-sm font-semibold bg-red-600 hover:bg-red-700 active:bg-red-800 text-white transition shadow-sm cursor-pointer">
+              Submit Test
+            </button>
+            <button type="button" id="next-btn" onclick="nextQuestion()" class="px-6 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white transition shadow-sm cursor-pointer">
+              Next
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Question Content -->
-      <div id="question-box">
-        <div class="flex justify-between items-center mb-2">
-          <span id="q-category" class="text-xs font-bold uppercase tracking-wider text-indigo-400"></span>
-          <span id="q-counter" class="text-xs text-slate-400"></span>
+      <!-- RIGHT: Question Navigation Sidebar (4 Cols) -->
+      <div class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sticky top-6">
+        <h3 class="text-sm font-bold text-slate-800 mb-4 tracking-wide">Question Navigation</h3>
+
+        <!-- Number Buttons Grid (1 to 50) -->
+        <div id="palette-grid" class="grid grid-cols-5 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+          <!-- Populated by JS -->
         </div>
-        <div id="q-text" class="text-base font-medium text-slate-200 mb-4 whitespace-pre-wrap leading-relaxed font-mono bg-slate-900/40 p-3 rounded border border-slate-700/50"></div>
-        <div id="options-container" class="space-y-3 mb-6"></div>
+
+        <!-- Palette Status Legend -->
+        <div class="mt-6 pt-5 border-t border-slate-100 space-y-2 text-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3.5 h-3.5 rounded bg-blue-600 inline-block"></span>
+            <span class="text-slate-600 font-medium">Current Question</span>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="w-3.5 h-3.5 rounded bg-emerald-600 inline-block"></span>
+            <span class="text-slate-600 font-medium">Answered</span>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="w-3.5 h-3.5 rounded bg-slate-200 inline-block"></span>
+            <span class="text-slate-600 font-medium">Unanswered</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Navigation Footer -->
-      <div class="flex justify-between items-center pt-4 border-t border-slate-700">
-        <button type="button" id="prev-btn" onclick="prevQuestion()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-4 py-2 rounded disabled:opacity-30 cursor-pointer">Previous</button>
-        <div class="flex gap-2">
-          <button type="button" id="next-btn" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2 rounded cursor-pointer">Next</button>
-          <button type="button" onclick="submitExam('Candidate submitted manually.')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-5 py-2 rounded font-semibold cursor-pointer">Submit Test</button>
-        </div>
-      </div>
     </div>
 
-    <!-- 3. COMPLETION SCREEN (No Marks Visible) -->
-    <div id="completion-screen" class="hidden max-w-md w-full bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl text-center">
-      <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-emerald-500/30">✓</div>
-      <h2 class="text-2xl font-bold text-white mb-2">Assessment Completed</h2>
-      <p class="text-sm text-slate-300 mb-4">Your responses have been successfully recorded.</p>
-      <div class="p-4 bg-slate-900 border border-slate-700 rounded-lg text-left text-xs space-y-2 text-slate-400">
-        <div><b class="text-slate-200">Register Number:</b> <span id="comp-reg"></span></div>
-        <div><b class="text-slate-200">Candidate Name:</b> <span id="comp-name"></span></div>
-        <div><b class="text-slate-200">Status:</b> Submitted and Locked</div>
+    <!-- 3. COMPLETION SCREEN (Marks Hidden) -->
+    <div id="completion-screen" class="hidden max-w-md w-full bg-white p-8 rounded-2xl border border-slate-200 shadow-xl text-center">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-emerald-200">
+        ✓
       </div>
-      <p class="text-xs text-slate-500 mt-6">Results will be evaluated and published by the IT department staff.</p>
+      <h2 class="text-2xl font-bold text-slate-900 mb-1">Assessment Completed</h2>
+      <p class="text-xs text-slate-500 mb-6">Your answers have been securely recorded.</p>
+      
+      <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-left text-xs space-y-2 text-slate-600">
+        <div><b class="text-slate-800">Register Number:</b> <span id="comp-reg" class="font-mono"></span></div>
+        <div><b class="text-slate-800">Candidate Name:</b> <span id="comp-name"></span></div>
+        <div><b class="text-slate-800">Department / Year:</b> <span id="comp-dept"></span></div>
+        <div><b class="text-slate-800">Status:</b> <span class="text-emerald-600 font-semibold">Locked & Submitted</span></div>
+      </div>
+
+      <div class="mt-6 text-xs text-slate-400 leading-relaxed">
+        The test portal is now closed for this Register Number. Scores and percentiles are sent to the staff dashboard.
+      </div>
     </div>
 
     <!-- 4. STAFF ADMIN SCREEN -->
-    <div id="admin-screen" class="hidden w-full max-w-5xl bg-slate-800 rounded-xl border border-slate-700 shadow-2xl p-6">
+    <div id="admin-screen" class="hidden w-full max-w-5xl bg-white rounded-2xl border border-slate-200 shadow-xl p-6">
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h2 class="text-xl font-bold text-white">Staff Monitoring Console</h2>
-          <p class="text-xs text-slate-400">LOGIX Exam real-time candidate scores and percentages</p>
+          <h2 class="text-xl font-bold text-slate-900">Staff Monitoring Console</h2>
+          <p class="text-xs text-slate-500">Live evaluation scores and percentages for Department of IT</p>
         </div>
         <div class="flex gap-2">
-          <button type="button" onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded">Export CSV</button>
-          <button type="button" onclick="exitAdmin()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-3 py-2 rounded">Exit Admin</button>
+          <button type="button" onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-medium shadow-sm transition">
+            Export CSV
+          </button>
+          <button type="button" onclick="exitAdmin()" class="bg-slate-700 hover:bg-slate-800 text-white text-xs px-3.5 py-2 rounded-lg font-medium transition">
+            Exit Admin
+          </button>
         </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
+      <div class="overflow-x-auto border border-slate-200 rounded-xl">
+        <table class="w-full text-left text-xs">
           <thead>
-            <tr class="bg-slate-900 text-slate-400 border-b border-slate-700">
+            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold uppercase tracking-wider">
               <th class="p-3">Reg No</th>
               <th class="p-3">Name</th>
               <th class="p-3">Dept / Year</th>
@@ -156,22 +209,21 @@
               <th class="p-3">Submitted At</th>
             </tr>
           </thead>
-          <tbody id="admin-table-body" class="divide-y divide-slate-700"></tbody>
+          <tbody id="admin-table-body" class="divide-y divide-slate-200 text-slate-700"></tbody>
         </table>
       </div>
     </div>
 
   </main>
 
-  <footer class="text-center py-3 text-xs text-slate-600 border-t border-slate-800">
-    LOGIX &copy; Department of Information Technology. Anti-cheating proctored environment active.
+  <footer class="text-center py-3 text-xs text-slate-400 border-t border-slate-200 bg-white">
+    LOGIX &bull; Department of Information Technology &bull; Proctored Online Assessment
   </footer>
 
-  <!-- Optional questions.js import (falls back to embedded questions if not present) -->
+  <!-- ================= SCRIPTS ================= -->
   <script src="questions.js"></script>
-
   <script>
-    // --- 1. UTILITY FUNCTIONS (Defined first) ---
+    // --- 1. CORE UTILITIES ---
     function hashString(str) {
       var hash = 0;
       if (!str || str.length === 0) return hash;
@@ -196,7 +248,7 @@
       return copy;
     }
 
-    // --- 2. GLOBAL STATE VARIABLES ---
+    // --- 2. GLOBAL STATE ---
     var currentCandidate = null;
     var shuffledQuestions = [];
     var currentIdx = 0;
@@ -206,7 +258,6 @@
     var warnings = 0;
 
     // --- 3. QUESTION BANK FALLBACK ---
-    // If questions.js loaded RAW_QUESTIONS, it will be used; otherwise this fallback is used.
     if (typeof RAW_QUESTIONS === 'undefined') {
       window.RAW_QUESTIONS = [
         { lang: "C Programming", q: "What is the output of:\nint x = 5;\nint y = x++ + ++x;\nprintf(\"%d %d\", x, y);", options: ["7 12", "7 13", "Undefined Behavior", "6 12"], answer: 2 },
@@ -226,7 +277,6 @@
         { lang: "C Programming", q: "Double free result:\nint *p = malloc(sizeof(int));\nfree(p);\nfree(p);", options: ["No effect", "Memory cleaned", "Undefined Behavior (Double Free)", "Compiler Error"], answer: 2 },
         { lang: "C Programming", q: "Output of signed vs unsigned comparison:\nint x = -1;\nunsigned int y = 1;\nif (x < y) printf(\"LESS\"); else printf(\"GREATER\");", options: ["LESS", "GREATER", "Compile Error", "Undefined"], answer: 1 },
         { lang: "C Programming", q: "Output of: printf(\"%d\", 5[\"abcdef\"]);", options: ["Compile Error", "f", "102 (ASCII of f)", "Garbage Value"], answer: 2 },
-
         { lang: "C++ (OOP)", q: "What happens if base destructor is NOT virtual and derived is deleted via base pointer?", options: ["Both destructors run correctly", "Undefined behavior; Derived destructor skipped", "Compile time error", "Derived destructor runs first"], answer: 1 },
         { lang: "C++ (Polymorphism)", q: "Output of:\nclass A { public: virtual void s(){cout<<\"A\";} };\nclass B : public A { public: void s(){cout<<\"B\";} };\nA *a = new B(); a->s();", options: ["A", "B", "AB", "Compile Error"], answer: 1 },
         { lang: "C++ (References)", q: "Which statement about C++ references is FALSE?", options: ["References cannot be NULL", "References can be reseated after initialization", "References share memory address with aliased variable", "Reference must be initialized"], answer: 1 },
@@ -244,7 +294,6 @@
         { lang: "C++ (Virtual)", q: "Can a virtual function be declared inline in C++?", options: ["No error", "Yes, but inlining ignored when called polymorphically", "Always inlined", "Only if private"], answer: 1 },
         { lang: "C++ (Lambda)", q: "What does [&] capture in a lambda?", options: ["All automatic variables by reference", "All by value", "Only globals", "Syntax error"], answer: 0 },
         { lang: "C++ (Namespace)", q: "Benefit of anonymous namespace in C++?", options: ["Global across files", "Internal linkage to translation unit (replaces static)", "Faster compilation", "Thread locking"], answer: 1 },
-
         { lang: "Python", q: "Output of mutable default argument:\ndef f(v, l=[]):\n  l.append(v)\n  return l\nprint(f(1))\nprint(f(2))", options: ["[1] then [2]", "[1] then [1, 2]", "[1] then [[1],[2]]", "TypeError"], answer: 1 },
         { lang: "Python", q: "Output of:\nx = [1, 2, 3]\ny = x\ny += [4]\nprint(x is y, x)", options: ["True [1, 2, 3, 4]", "False [1, 2, 3, 4]", "False [1, 2, 3]", "True [1, 2, 3]"], answer: 0 },
         { lang: "Python", q: "Output of:\nx = [1, 2, 3]\ny = x\ny = y + [4]\nprint(x is y, x)", options: ["True [1, 2, 3, 4]", "False [1, 2, 3]", "False [1, 2, 3, 4]", "True [1, 2, 3]"], answer: 2 },
@@ -276,40 +325,149 @@
         return;
       }
 
-      // Check if already completed
+      // Check retake restriction
       const submissions = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
       if (submissions[reg]) {
-        alert("You have already completed this assessment. Re-takes are not allowed for Register Number: " + reg);
+        alert("You have already completed this assessment. Re-takes are disabled for: " + reg);
         return;
       }
 
       currentCandidate = { name, dept, year, reg };
 
-      // Shuffle uniquely per register number
+      // Unique deterministic shuffle
       const seed = hashString(reg);
       shuffledQuestions = seededShuffle(RAW_QUESTIONS, seed);
 
-      // UI Switch
+      // Top bar info update
+      document.getElementById('top-cand-details').innerText = `${name} (${reg}) \u2022 ${year} Year - ${dept}`;
+      document.getElementById('timer-badge').classList.remove('hidden');
+
+      // Screens switch
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('exam-screen').classList.remove('hidden');
-      document.getElementById('display-cand').innerText = name;
-      document.getElementById('display-reg').innerText = reg;
 
-      // Lock back button
+      // Disable back button
       history.pushState(null, "", location.href);
-      window.onpopstate = () => {
-        history.pushState(null, "", location.href);
-      };
+      window.onpopstate = () => history.pushState(null, "", location.href);
 
-      // Anti-cheat listeners
       initAntiCheat();
-
-      // Start exam
+      renderPalette();
       renderQuestion();
       startTimer();
     }
 
-    // --- 5. ANTI CHEATING GUARDS ---
+    // --- 5. RENDER QUESTION PALETTE (1 to 50 GRID) ---
+    function renderPalette() {
+      const grid = document.getElementById('palette-grid');
+      grid.innerHTML = '';
+
+      shuffledQuestions.forEach((_, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = `palette-btn-${idx}`;
+        btn.innerText = idx + 1;
+
+        // Styling based on state
+        let stateClasses = "bg-slate-200 text-slate-700 hover:bg-slate-300"; // Unanswered
+        if (idx === currentIdx) {
+          stateClasses = "bg-blue-600 text-white font-bold ring-2 ring-blue-400"; // Active
+        } else if (candidateAnswers[idx] !== undefined) {
+          stateClasses = "bg-emerald-600 text-white font-semibold"; // Answered
+        }
+
+        btn.className = `w-full py-2 rounded-lg text-xs transition font-mono ${stateClasses} cursor-pointer`;
+        btn.onclick = () => jumpToQuestion(idx);
+        grid.appendChild(btn);
+      });
+    }
+
+    function jumpToQuestion(idx) {
+      currentIdx = idx;
+      renderQuestion();
+      renderPalette();
+    }
+
+    // --- 6. RENDER CURRENT QUESTION ---
+    function renderQuestion() {
+      const q = shuffledQuestions[currentIdx];
+      document.getElementById('q-counter-badge').innerText = `QUESTION ${currentIdx + 1} OF ${shuffledQuestions.length}`;
+      document.getElementById('q-category-pill').innerText = q.lang;
+      document.getElementById('q-text').innerText = q.q;
+
+      const optsBox = document.getElementById('options-container');
+      optsBox.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const isSelected = candidateAnswers[currentIdx] === idx;
+        const card = document.createElement('div');
+        card.className = `w-full p-4 rounded-xl border text-sm transition flex items-center gap-3.5 cursor-pointer ${
+          isSelected
+            ? 'bg-blue-50/70 border-blue-500 text-slate-900 font-medium ring-1 ring-blue-500'
+            : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/50'
+        }`;
+
+        // Radio circle indicator
+        const radioCircle = document.createElement('span');
+        radioCircle.className = `w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
+          isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300 bg-white'
+        }`;
+        if (isSelected) {
+          radioCircle.innerHTML = '<span class="w-2 h-2 rounded-full bg-white"></span>';
+        }
+
+        const label = document.createElement('span');
+        label.innerText = opt;
+        label.className = "flex-grow";
+
+        card.appendChild(radioCircle);
+        card.appendChild(label);
+
+        card.onclick = () => {
+          candidateAnswers[currentIdx] = idx;
+          renderQuestion();
+          renderPalette();
+        };
+
+        optsBox.appendChild(card);
+      });
+
+      document.getElementById('prev-btn').disabled = (currentIdx === 0);
+      document.getElementById('next-btn').style.display = (currentIdx === shuffledQuestions.length - 1) ? 'none' : 'block';
+    }
+
+    function prevQuestion() {
+      if (currentIdx > 0) {
+        currentIdx--;
+        renderQuestion();
+        renderPalette();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentIdx < shuffledQuestions.length - 1) {
+        currentIdx++;
+        renderQuestion();
+        renderPalette();
+      }
+    }
+
+    // --- 7. TIMER ---
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+        const secs = String(timerSeconds % 60).padStart(2, '0');
+        document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval);
+          alert("Time is up! Submitting exam automatically.");
+          submitExam("Time Expired");
+        }
+      }, 1000);
+    }
+
+    // --- 8. ANTI CHEATING ---
     function initAntiCheat() {
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('copy', e => e.preventDefault());
@@ -333,75 +491,22 @@
       warnings++;
       document.getElementById('warning-text').innerText = `Warnings: ${warnings}/3`;
       if (warnings >= 3) {
-        alert("Maximum tab/window violation reached! Auto submitting...");
-        submitExam("Terminated due to multiple tab-switch violations.");
+        alert("Maximum tab/window violation reached! Auto-submitting assessment...");
+        submitExam("Terminated due to multiple violations.");
       } else {
-        alert(`Warning ${warnings}/3: Do not switch tabs or minimize the window!`);
+        alert(`Warning ${warnings}/3: Switching tabs is not allowed!`);
       }
     }
 
-    // --- 6. TIMER ---
-    function startTimer() {
-      timerInterval = setInterval(() => {
-        timerSeconds--;
-        const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
-        const secs = String(timerSeconds % 60).padStart(2, '0');
-        document.getElementById('timer-display').innerText = `${mins}:${secs}`;
-
-        if (timerSeconds <= 0) {
-          clearInterval(timerInterval);
-          alert("Time is up! Submitting exam automatically.");
-          submitExam("Time Expired");
-        }
-      }, 1000);
-    }
-
-    // --- 7. QUESTION RENDERING ---
-    function renderQuestion() {
-      const q = shuffledQuestions[currentIdx];
-      document.getElementById('q-category').innerText = q.lang;
-      document.getElementById('q-counter').innerText = `Question ${currentIdx + 1} of ${shuffledQuestions.length}`;
-      document.getElementById('q-text').innerText = q.q;
-
-      const optsBox = document.getElementById('options-container');
-      optsBox.innerHTML = '';
-
-      q.options.forEach((opt, idx) => {
-        const isSelected = candidateAnswers[currentIdx] === idx;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `w-full text-left p-3.5 rounded-lg border text-sm transition flex items-center justify-between cursor-pointer ${
-          isSelected 
-            ? 'bg-indigo-600/30 border-indigo-500 text-white font-medium ring-1 ring-indigo-500' 
-            : 'bg-slate-900/60 border-slate-700 text-slate-300 hover:bg-slate-700'
-        }`;
-        btn.innerHTML = `<span>${opt}</span> <span class="text-xs ${isSelected ? 'text-indigo-400 font-bold' : 'text-slate-500'}">Option ${String.fromCharCode(65 + idx)}</span>`;
-        btn.onclick = () => {
-          candidateAnswers[currentIdx] = idx;
-          renderQuestion();
-        };
-        optsBox.appendChild(btn);
-      });
-
-      document.getElementById('prev-btn').disabled = currentIdx === 0;
-      document.getElementById('next-btn').style.display = (currentIdx === shuffledQuestions.length - 1) ? 'none' : 'block';
-    }
-
-    function prevQuestion() {
-      if (currentIdx > 0) {
-        currentIdx--;
-        renderQuestion();
+    // --- 9. SUBMISSION ---
+    function confirmSubmit() {
+      const answeredCount = Object.keys(candidateAnswers).length;
+      const total = shuffledQuestions.length;
+      if (confirm(`You have answered ${answeredCount} of ${total} questions. Are you sure you want to finish the test?`)) {
+        submitExam("Candidate submitted manually");
       }
     }
 
-    function nextQuestion() {
-      if (currentIdx < shuffledQuestions.length - 1) {
-        currentIdx++;
-        renderQuestion();
-      }
-    }
-
-    // --- 8. SUBMISSION ---
     function submitExam(reason) {
       clearInterval(timerInterval);
 
@@ -412,6 +517,7 @@
 
       const percentage = ((score / shuffledQuestions.length) * 100).toFixed(1);
 
+      // Save quietly for admin view only
       const submissions = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
       submissions[currentCandidate.reg] = {
         name: currentCandidate.name,
@@ -422,24 +528,27 @@
         total: shuffledQuestions.length,
         percentage: `${percentage}%`,
         warnings: warnings,
-        time: new Date().toLocaleTimeString(),
-        date: new Date().toLocaleDateString()
+        time: new Date().toLocaleTimeString()
       };
       localStorage.setItem('logix_submissions', JSON.stringify(submissions));
 
+      // Display locked completion receipt
       document.getElementById('exam-screen').classList.add('hidden');
+      document.getElementById('timer-badge').classList.add('hidden');
       document.getElementById('comp-reg').innerText = currentCandidate.reg;
       document.getElementById('comp-name').innerText = currentCandidate.name;
+      document.getElementById('comp-dept').innerText = `${currentCandidate.dept} (${currentCandidate.year} Year)`;
       document.getElementById('completion-screen').classList.remove('hidden');
     }
 
-    // --- 9. ADMIN PANEL ---
+    // --- 10. STAFF ADMIN ---
     function toggleAdminLogin() {
       const pin = prompt("Enter Staff Admin PIN:");
       if (pin === "admin123") {
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('exam-screen').classList.add('hidden');
         document.getElementById('completion-screen').classList.add('hidden');
+        document.getElementById('timer-badge').classList.add('hidden');
         document.getElementById('admin-screen').classList.remove('hidden');
         loadAdminTable();
       } else if (pin !== null) {
@@ -459,21 +568,21 @@
       const list = Object.values(data);
 
       if (list.length === 0) {
-        body.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-500">No submissions yet.</td></tr>';
+        body.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">No student submissions recorded yet.</td></tr>';
         return;
       }
 
       list.forEach(item => {
         const row = document.createElement('tr');
-        row.className = "hover:bg-slate-700/50";
+        row.className = "hover:bg-slate-50 transition";
         row.innerHTML = `
-          <td class="p-3 font-mono font-bold text-indigo-400">${item.reg}</td>
-          <td class="p-3 font-medium text-white">${item.name}</td>
-          <td class="p-3">${item.dept} (${item.year})</td>
-          <td class="p-3 font-semibold text-emerald-400">${item.score}/${item.total}</td>
-          <td class="p-3 font-bold text-amber-400">${item.percentage}</td>
-          <td class="p-3 ${item.warnings > 0 ? 'text-rose-400' : 'text-slate-400'}">${item.warnings}</td>
-          <td class="p-3 text-slate-400">${item.time}</td>
+          <td class="p-3 font-mono font-bold text-blue-600">${item.reg}</td>
+          <td class="p-3 font-semibold text-slate-900">${item.name}</td>
+          <td class="p-3 text-slate-600">${item.dept} (${item.year})</td>
+          <td class="p-3 font-semibold text-emerald-600">${item.score}/${item.total}</td>
+          <td class="p-3 font-bold text-slate-900">${item.percentage}</td>
+          <td class="p-3 ${item.warnings > 0 ? 'text-red-500 font-bold' : 'text-slate-400'}">${item.warnings}</td>
+          <td class="p-3 text-slate-500">${item.time}</td>
         `;
         body.appendChild(row);
       });
@@ -497,9 +606,9 @@
     }
 
     function clearMyData() {
-      if (confirm("Reset submissions data for testing?")) {
+      if (confirm("Reset submissions cache for testing?")) {
         localStorage.removeItem('logix_submissions');
-        alert("Data cleared. You can now re-test with any Register Number.");
+        alert("Submissions cleared! You can now test with any Register Number.");
         location.reload();
       }
     }
