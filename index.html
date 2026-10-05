@@ -444,8 +444,12 @@
       });
     }
 
+   var isSubmitting = false;
+
     function recordViolation() {
-      if (!currentCandidate || document.getElementById('exam-screen').classList.contains('hidden')) return;
+      // Submit aagum podho illana exam mudinja podho warning varakkoodadhu
+      if (isSubmitting || !currentCandidate || document.getElementById('exam-screen').classList.contains('hidden')) return;
+      
       warnings++;
       document.getElementById('warning-text').innerText = `Warnings: ${warnings}/3`;
       if (warnings >= 3) {
@@ -455,17 +459,27 @@
         alert(`Warning ${warnings}/3: Switching tabs or minimizing is prohibited!`);
       }
     }
-
-    function confirmSubmit() {
+function confirmSubmit() {
       const answeredCount = Object.keys(candidateAnswers).length;
       const total = shuffledQuestions.length;
+      
+      // Submit dialog open aagum podhu blur warning stop panna
+      isSubmitting = true;
+
       if (confirm(`You answered ${answeredCount} of ${total} questions. Are you sure you want to finish the exam?`)) {
         submitExam("Candidate submitted manually");
+      } else {
+        // Cancel pannina thirumba alert-a resume panna
+        isSubmitting = false;
       }
     }
 
     async function submitExam(reason) {
+      isSubmitting = true;
       clearInterval(timerInterval);
+
+      // Listeners-a clean-a remove panniduvom
+      window.removeEventListener('blur', recordViolation);
 
       let score = 0;
       shuffledQuestions.forEach((q, idx) => {
