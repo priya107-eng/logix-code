@@ -4,8 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LOGIX - Dept of Information Technology</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Firebase Compat Libraries (No import syntax errors) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
   <style>
+    /* Disable text selection & copy */
     body {
       user-select: none;
       -webkit-user-select: none;
@@ -14,7 +22,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
 
-  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <!-- ================= TOP BAR ================= -->
   <header class="bg-[#0b1329] text-white px-8 py-3.5 flex justify-between items-center shadow-lg border-b border-slate-800">
     <div>
       <h1 class="text-lg font-bold tracking-wide flex items-center gap-2">
@@ -26,10 +34,7 @@
       </p>
     </div>
     <div class="flex items-center gap-4">
-      <button onclick="clearMyData()" class="text-xs bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/80 px-2.5 py-1 rounded transition">
-        Reset Test (Staff)
-      </button>
-      <button onclick="toggleAdminLogin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded transition">
+      <button onclick="toggleAdminLogin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded transition cursor-pointer">
         Staff Console
       </button>
       <div id="timer-badge" class="hidden bg-[#162038] border border-slate-700/60 px-4 py-1.5 rounded-lg flex items-center gap-2">
@@ -39,7 +44,7 @@
     </div>
   </header>
 
-  <!-- ================= MAIN VIEW CONTAINER ================= -->
+  <!-- ================= MAIN CONTAINER ================= -->
   <main class="flex-grow flex items-center justify-center p-4 md:p-6">
 
     <!-- 1. LOGIN SCREEN -->
@@ -76,24 +81,23 @@
         </div>
 
         <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs leading-relaxed">
-          &bull; <b>Exam Rules:</b> 50 questions | 30 minutes.<br />
-          &bull; Tab switching is restricted. Maximum 3 warnings before auto-submission.<br />
-          &bull; Right-click and copy-paste are disabled.
+          &bull; <b>Rules:</b> 50 questions | 30 mins timer.<br />
+          &bull; Tab switching is restricted (3 warnings max).<br />
+          &bull; Copy, cut, and right-click are disabled.
         </div>
 
-        <button type="button" onclick="startExam()" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-md cursor-pointer">
+        <button type="button" id="start-exam-btn" onclick="startExam()" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-md cursor-pointer">
           Start Examination
         </button>
       </div>
     </div>
 
-    <!-- 2. EXAM TERMINAL (LAYOUT MATCHING THE SCREENSHOT) -->
+    <!-- 2. EXAM TERMINAL -->
     <div id="exam-screen" class="hidden w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       
-      <!-- LEFT: Main Question Card (8 Cols) -->
+      <!-- LEFT: Question Area (8 Cols) -->
       <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 flex flex-col justify-between min-h-[580px]">
         <div>
-          <!-- Header info -->
           <div class="flex justify-between items-center pb-4 mb-6">
             <span id="q-counter-badge" class="text-xs font-bold text-blue-600 tracking-wider uppercase">
               QUESTION 1 OF 50
@@ -106,16 +110,10 @@
             </div>
           </div>
 
-          <!-- Question Content -->
-          <div id="q-text" class="text-lg font-semibold text-slate-900 leading-relaxed mb-6 whitespace-pre-wrap font-sans">
-            Question text goes here
-          </div>
-
-          <!-- Options List (Radio Card Style) -->
+          <div id="q-text" class="text-lg font-semibold text-slate-900 leading-relaxed mb-6 whitespace-pre-wrap font-sans"></div>
           <div id="options-container" class="space-y-3.5 mb-8"></div>
         </div>
 
-        <!-- Footer Buttons -->
         <div class="flex justify-between items-center pt-6 border-t border-slate-100">
           <button type="button" id="prev-btn" onclick="prevQuestion()" class="px-6 py-2.5 rounded-lg text-sm font-semibold border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-600 disabled:opacity-40 transition cursor-pointer">
             Previous
@@ -131,16 +129,11 @@
         </div>
       </div>
 
-      <!-- RIGHT: Question Navigation Sidebar (4 Cols) -->
+      <!-- RIGHT: Question Navigation (4 Cols) -->
       <div class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sticky top-6">
         <h3 class="text-sm font-bold text-slate-800 mb-4 tracking-wide">Question Navigation</h3>
+        <div id="palette-grid" class="grid grid-cols-5 gap-2.5 max-h-[380px] overflow-y-auto pr-1"></div>
 
-        <!-- Number Buttons Grid (1 to 50) -->
-        <div id="palette-grid" class="grid grid-cols-5 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
-          <!-- Populated by JS -->
-        </div>
-
-        <!-- Palette Status Legend -->
         <div class="mt-6 pt-5 border-t border-slate-100 space-y-2 text-xs">
           <div class="flex items-center gap-2.5">
             <span class="w-3.5 h-3.5 rounded bg-blue-600 inline-block"></span>
@@ -165,17 +158,17 @@
         ✓
       </div>
       <h2 class="text-2xl font-bold text-slate-900 mb-1">Assessment Completed</h2>
-      <p class="text-xs text-slate-500 mb-6">Your answers have been securely recorded.</p>
+      <p class="text-xs text-slate-500 mb-6">Your answers have been securely synced to the IT Department cloud.</p>
       
       <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-left text-xs space-y-2 text-slate-600">
         <div><b class="text-slate-800">Register Number:</b> <span id="comp-reg" class="font-mono"></span></div>
         <div><b class="text-slate-800">Candidate Name:</b> <span id="comp-name"></span></div>
         <div><b class="text-slate-800">Department / Year:</b> <span id="comp-dept"></span></div>
-        <div><b class="text-slate-800">Status:</b> <span class="text-emerald-600 font-semibold">Locked & Submitted</span></div>
+        <div><b class="text-slate-800">Status:</b> <span class="text-emerald-600 font-semibold">Submitted & Locked</span></div>
       </div>
 
       <div class="mt-6 text-xs text-slate-400 leading-relaxed">
-        The test portal is now closed for this Register Number. Scores and percentiles are sent to the staff dashboard.
+        The test is submitted. Results will be evaluated and published by staff.
       </div>
     </div>
 
@@ -183,14 +176,14 @@
     <div id="admin-screen" class="hidden w-full max-w-5xl bg-white rounded-2xl border border-slate-200 shadow-xl p-6">
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h2 class="text-xl font-bold text-slate-900">Staff Monitoring Console</h2>
-          <p class="text-xs text-slate-500">Live evaluation scores and percentages for Department of IT</p>
+          <h2 class="text-xl font-bold text-slate-900">Staff Monitoring Console (Firebase Cloud Live)</h2>
+          <p class="text-xs text-slate-500">Live evaluation scores across all candidate devices</p>
         </div>
         <div class="flex gap-2">
-          <button type="button" onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-medium shadow-sm transition">
+          <button type="button" onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-medium shadow-sm transition cursor-pointer">
             Export CSV
           </button>
-          <button type="button" onclick="exitAdmin()" class="bg-slate-700 hover:bg-slate-800 text-white text-xs px-3.5 py-2 rounded-lg font-medium transition">
+          <button type="button" onclick="exitAdmin()" class="bg-slate-700 hover:bg-slate-800 text-white text-xs px-3.5 py-2 rounded-lg font-medium transition cursor-pointer">
             Exit Admin
           </button>
         </div>
@@ -223,7 +216,23 @@
   <!-- ================= SCRIPTS ================= -->
   <script src="questions.js"></script>
   <script>
-    // --- 1. CORE UTILITIES ---
+    // ================= FIREBASE CONFIGURATION =================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDG3yi3HJGMA5U-qhVmgfPvublaR1X3J3Y",
+      authDomain: "logix-portal.firebaseapp.com",
+      projectId: "logix-portal",
+      storageBucket: "logix-portal.firebasestorage.app",
+      messagingSenderId: "157388212682",
+      appId: "1:157388212682:web:cfe2cb762b348b1bf7a733"
+    };
+
+    // Initialize Firebase safely
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // ================= UTILITIES & CORE LOGIC =================
     function hashString(str) {
       var hash = 0;
       if (!str || str.length === 0) return hash;
@@ -248,7 +257,6 @@
       return copy;
     }
 
-    // --- 2. GLOBAL STATE ---
     var currentCandidate = null;
     var shuffledQuestions = [];
     var currentIdx = 0;
@@ -256,65 +264,18 @@
     var timerSeconds = 30 * 60;
     var timerInterval = null;
     var warnings = 0;
+    var adminUnsubscribe = null;
 
-    // --- 3. QUESTION BANK FALLBACK ---
+    // Fallback questions if questions.js is missing
     if (typeof RAW_QUESTIONS === 'undefined') {
       window.RAW_QUESTIONS = [
-        { lang: "C Programming", q: "What is the output of:\nint x = 5;\nint y = x++ + ++x;\nprintf(\"%d %d\", x, y);", options: ["7 12", "7 13", "Undefined Behavior", "6 12"], answer: 2 },
-        { lang: "C Programming", q: "What is the output?\nint a = 10, b = 20;\nprintf(\"%d\", a < b ? a++ : b++);\nprintf(\" %d\", a);", options: ["10 11", "10 10", "11 11", "20 10"], answer: 0 },
-        { lang: "C Programming", q: "What does this pointer arithmetic print?\nint arr[] = {10, 20, 30, 40, 50};\nint *ptr = arr;\nprintf(\"%d \", *(ptr + 3));\nprintf(\"%d\", *ptr++);", options: ["40 10", "40 20", "30 10", "30 20"], answer: 0 },
-        { lang: "C Programming", q: "Output of sizeof on array parameter on 64-bit architecture?\nvoid func(int arr[10]) { printf(\"%lu\", sizeof(arr)); }", options: ["40", "8", "4", "Compile Error"], answer: 1 },
-        { lang: "C Programming", q: "What does printf return in C?\nint c = printf(\"LOGIX2026\");\nprintf(\" %d\", c);", options: ["LOGIX2026 9", "LOGIX2026 0", "LOGIX2026 1", "LOGIX2026 8"], answer: 0 },
-        { lang: "C Programming", q: "Value of ptr2 - ptr1?\nint arr[5] = {1, 2, 3, 4, 5};\nint *ptr1 = &arr[1];\nint *ptr2 = &arr[4];\nprintf(\"%td\", ptr2 - ptr1);", options: ["12", "3", "6", "Depends on architecture"], answer: 1 },
-        { lang: "C Programming", q: "Behavior of modifying string literal:\nchar *str = \"Hello\";\nstr[0] = 'M';", options: ["Mello", "Compilation error", "Undefined Behavior (Segfault)", "Warning"], answer: 2 },
-        { lang: "C Programming", q: "Evaluation of macro:\n#define SQUARE(x) x * x\nint res = SQUARE(2 + 3);", options: ["25", "11", "13", "10"], answer: 1 },
-        { lang: "C Programming", q: "Recursion output?\nvoid count(int n) {\n  if(n<=0) return;\n  count(n-1);\n  printf(\"%d \", n);\n  count(n-1);\n}\ncount(3);", options: ["1 2 1 3 1 2 1", "3 2 1 1 2 3", "1 2 3 2 1", "3 2 1 2 3"], answer: 0 },
-        { lang: "C Programming", q: "Size of struct with padding on 64-bit:\nstruct Node { char a; int b; char c; };", options: ["6 bytes", "8 bytes", "12 bytes", "16 bytes"], answer: 2 },
-        { lang: "C Programming", q: "Output of:\nint main() {\n  static int x = 3;\n  if (--x) { main(); printf(\"%d \", x); }\n}", options: ["0 0", "1 2", "0 1 2", "Infinite recursion"], answer: 0 },
-        { lang: "C Programming", q: "Output of bitwise operation:\nint x = 8;\nprintf(\"%d\", (x & (x - 1)));", options: ["8", "7", "0", "1"], answer: 2 },
-        { lang: "C Programming", q: "Meaning of: int (*fp)(int, int);", options: ["Function returning int pointer array", "Pointer to function taking two ints returning int", "Function taking pointers returning int", "Syntax error"], answer: 1 },
-        { lang: "C Programming", q: "Output of switch statement:\nint x = 2;\nswitch(x) {\n  case 1: printf(\"A\");\n  case 2: printf(\"B\");\n  case 3: printf(\"C\");\n  default: printf(\"D\");\n}", options: ["B", "BCD", "BC", "B C D"], answer: 1 },
-        { lang: "C Programming", q: "Double free result:\nint *p = malloc(sizeof(int));\nfree(p);\nfree(p);", options: ["No effect", "Memory cleaned", "Undefined Behavior (Double Free)", "Compiler Error"], answer: 2 },
-        { lang: "C Programming", q: "Output of signed vs unsigned comparison:\nint x = -1;\nunsigned int y = 1;\nif (x < y) printf(\"LESS\"); else printf(\"GREATER\");", options: ["LESS", "GREATER", "Compile Error", "Undefined"], answer: 1 },
-        { lang: "C Programming", q: "Output of: printf(\"%d\", 5[\"abcdef\"]);", options: ["Compile Error", "f", "102 (ASCII of f)", "Garbage Value"], answer: 2 },
-        { lang: "C++ (OOP)", q: "What happens if base destructor is NOT virtual and derived is deleted via base pointer?", options: ["Both destructors run correctly", "Undefined behavior; Derived destructor skipped", "Compile time error", "Derived destructor runs first"], answer: 1 },
-        { lang: "C++ (Polymorphism)", q: "Output of:\nclass A { public: virtual void s(){cout<<\"A\";} };\nclass B : public A { public: void s(){cout<<\"B\";} };\nA *a = new B(); a->s();", options: ["A", "B", "AB", "Compile Error"], answer: 1 },
-        { lang: "C++ (References)", q: "Which statement about C++ references is FALSE?", options: ["References cannot be NULL", "References can be reseated after initialization", "References share memory address with aliased variable", "Reference must be initialized"], answer: 1 },
-        { lang: "C++ (Constructors)", q: "Output of:\nclass S { public: S(){cout<<\"1 \";} S(const S&){cout<<\"2 \";} };\nS a; S b = a;", options: ["1 1", "1 2", "2 1", "1"], answer: 1 },
-        { lang: "C++ (Smart Pointers)", q: "Difference between unique_ptr and shared_ptr?", options: ["unique_ptr cannot be moved", "shared_ptr has reference counting; unique_ptr enforces single ownership", "shared_ptr is faster with zero overhead", "unique_ptr can be cloned"], answer: 1 },
-        { lang: "C++ (Templates)", q: "Return type of decltype(auto) deduced from (x) where int x = 10;?", options: ["int", "int&", "const int", "int&&"], answer: 1 },
-        { lang: "C++ (Diamond Problem)", q: "In C++, how is the diamond problem solved in multiple inheritance?", options: ["Virtual base classes", "Abstract classes", "Friend inheritance", "Not allowed"], answer: 0 },
-        { lang: "C++ (Operator Overload)", q: "Which operator CANNOT be overloaded in C++?", options: ["+", "[]", "::", "()"], answer: 2 },
-        { lang: "C++ (Static)", q: "Where is a class static member variable stored and initialized?", options: ["Stack inside constructor", "Heap dynamically", "Data Segment, defined outside class", "VTable"], answer: 2 },
-        { lang: "C++ (STL)", q: "Average time complexity of insert/search in std::unordered_map?", options: ["O(log N)", "O(1)", "O(N)", "O(N log N)"], answer: 1 },
-        { lang: "C++ (Exceptions)", q: "What happens if an exception is thrown in destructor during stack unwinding?", options: ["Caught by main", "std::terminate is invoked immediately", "Destructor skipped", "Compile error"], answer: 1 },
-        { lang: "C++ (Keywords)", q: "What does the mutable keyword allow?", options: ["Changes variable type dynamically", "Allows member to be modified in const member function", "Prevents optimization", "Thread safe"], answer: 1 },
-        { lang: "C++ (Move)", q: "What does std::move(obj) actually do?", options: ["Moves data blocks", "Casts obj to an rvalue reference (T&&)", "Clones object", "Clears heap memory"], answer: 1 },
-        { lang: "C++ (Memory)", q: "Size of empty class in C++ (sizeof(Empty))?", options: ["0 bytes", "1 byte", "4 bytes", "8 bytes"], answer: 1 },
-        { lang: "C++ (Virtual)", q: "Can a virtual function be declared inline in C++?", options: ["No error", "Yes, but inlining ignored when called polymorphically", "Always inlined", "Only if private"], answer: 1 },
-        { lang: "C++ (Lambda)", q: "What does [&] capture in a lambda?", options: ["All automatic variables by reference", "All by value", "Only globals", "Syntax error"], answer: 0 },
-        { lang: "C++ (Namespace)", q: "Benefit of anonymous namespace in C++?", options: ["Global across files", "Internal linkage to translation unit (replaces static)", "Faster compilation", "Thread locking"], answer: 1 },
-        { lang: "Python", q: "Output of mutable default argument:\ndef f(v, l=[]):\n  l.append(v)\n  return l\nprint(f(1))\nprint(f(2))", options: ["[1] then [2]", "[1] then [1, 2]", "[1] then [[1],[2]]", "TypeError"], answer: 1 },
-        { lang: "Python", q: "Output of:\nx = [1, 2, 3]\ny = x\ny += [4]\nprint(x is y, x)", options: ["True [1, 2, 3, 4]", "False [1, 2, 3, 4]", "False [1, 2, 3]", "True [1, 2, 3]"], answer: 0 },
-        { lang: "Python", q: "Output of:\nx = [1, 2, 3]\ny = x\ny = y + [4]\nprint(x is y, x)", options: ["True [1, 2, 3, 4]", "False [1, 2, 3]", "False [1, 2, 3, 4]", "True [1, 2, 3]"], answer: 2 },
-        { lang: "Python", q: "Output of closure in list comprehension:\nfuncs = [lambda x: x + i for i in range(3)]\nprint([f(1) for f in funcs])", options: ["[1, 2, 3]", "[2, 3, 4]", "[3, 3, 3]", "[4, 4, 4]"], answer: 2 },
-        { lang: "Python", q: "What happens on:\nt = (1, 2, [3, 4])\nt[2].append(5)", options: ["TypeError", "Appends 5 successfully to list inside tuple", "New tuple", "SyntaxWarning"], answer: 1 },
-        { lang: "Python", q: "What happens on:\nt = (1, 2, [3, 4])\nt[2] += [5]", options: ["Executes normally", "Raises TypeError, but 5 is appended to list", "Raises TypeError and list unchanged", "SyntaxError"], answer: 1 },
-        { lang: "Python", q: "Output of dict key hashing with bool and int:\nd = {}\nd[1] = 'A'\nd[True] = 'B'\nd[1.0] = 'C'\nprint(len(d), d[1])", options: ["3 C", "1 C", "2 B", "1 A"], answer: 1 },
-        { lang: "Python", q: "Python Method Resolution Order (MRO) algorithm?", options: ["DFS", "BFS", "C3 Linearization", "Random"], answer: 2 },
-        { lang: "Python", q: "What is GIL in CPython?", options: ["Mutex preventing multiple native threads from executing bytecodes simultaneously", "Lock on globals only", "I/O race condition preventer", "GC supervisor"], answer: 0 },
-        { lang: "Python", q: "Output of: print(''.join(reversed('logix')))", options: ["xigol", "logix", "TypeError", "['x','i','g','o','l']"], answer: 0 },
-        { lang: "Python", q: "Difference between @classmethod and @staticmethod?", options: ["@classmethod receives cls; @staticmethod receives neither self nor cls", "@staticmethod modifies class state", "@classmethod cannot be called on instances", "No difference"], answer: 0 },
-        { lang: "Python", q: "Output of single-element tuple syntax:\na = (1)\nb = (1,)\nprint(type(a), type(b))", options: ["tuple tuple", "int tuple", "tuple int", "int int"], answer: 1 },
-        { lang: "Python", q: "What does __slots__ attribute in class do?", options: ["Restricts method names", "Prevents __dict__ creation per instance, saving memory", "Thread safe attributes", "Makes attributes private"], answer: 1 },
-        { lang: "Python", q: "Output of exhausted generator:\ngen = (x**2 for x in range(3))\nprint(list(gen))\nprint(list(gen))", options: ["[0, 1, 4] then [0, 1, 4]", "[0, 1, 4] then []", "[0, 1, 4] then None", "GeneratorError"], answer: 1 },
-        { lang: "Python", q: "Output in standard interactive CPython session:\na = 256; b = 256\nc = 257; d = 257\nprint(a is b, c is d)", options: ["True True", "True False", "False False", "False True"], answer: 1 },
-        { lang: "Python", q: "Output of bool('False') in Python?", options: ["False", "True", "None", "ValueError"], answer: 1 }
+        { lang: "C Programming", q: "What is output of:\nint x = 5;\nint y = x++ + ++x;\nprintf(\"%d %d\", x, y);", options: ["7 12", "7 13", "Undefined Behavior", "6 12"], answer: 2 },
+        { lang: "Python", q: "Output of:\nx = [1, 2, 3]\ny = x\ny += [4]\nprint(x is y, x)", options: ["True [1, 2, 3, 4]", "False [1, 2, 3, 4]", "False [1, 2, 3]", "True [1, 2, 3]"], answer: 0 }
       ];
     }
 
-    // --- 4. START EXAM ---
-    function startExam() {
+    // ================= EXAM WORKFLOW =================
+    async function startExam() {
       const name = document.getElementById('cand-name').value.trim();
       const dept = document.getElementById('cand-dept').value.trim();
       const year = document.getElementById('cand-year').value;
@@ -325,28 +286,34 @@
         return;
       }
 
-      // Check retake restriction
-      const submissions = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
-      if (submissions[reg]) {
-        alert("You have already completed this assessment. Re-takes are disabled for: " + reg);
-        return;
+      const startBtn = document.getElementById('start-exam-btn');
+      startBtn.disabled = true;
+      startBtn.innerText = "Checking credentials...";
+
+      // Check retake restriction from Firebase Cloud
+      try {
+        const docSnap = await db.collection("logix_submissions").doc(reg).get();
+        if (docSnap.exists) {
+          alert("This Register Number (" + reg + ") has already completed the assessment!");
+          startBtn.disabled = false;
+          startBtn.innerText = "Start Examination";
+          return;
+        }
+      } catch (err) {
+        console.warn("Retake check warning:", err);
       }
 
       currentCandidate = { name, dept, year, reg };
 
-      // Unique deterministic shuffle
       const seed = hashString(reg);
       shuffledQuestions = seededShuffle(RAW_QUESTIONS, seed);
 
-      // Top bar info update
       document.getElementById('top-cand-details').innerText = `${name} (${reg}) \u2022 ${year} Year - ${dept}`;
       document.getElementById('timer-badge').classList.remove('hidden');
 
-      // Screens switch
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('exam-screen').classList.remove('hidden');
 
-      // Disable back button
       history.pushState(null, "", location.href);
       window.onpopstate = () => history.pushState(null, "", location.href);
 
@@ -356,7 +323,6 @@
       startTimer();
     }
 
-    // --- 5. RENDER QUESTION PALETTE (1 to 50 GRID) ---
     function renderPalette() {
       const grid = document.getElementById('palette-grid');
       grid.innerHTML = '';
@@ -364,30 +330,25 @@
       shuffledQuestions.forEach((_, idx) => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.id = `palette-btn-${idx}`;
         btn.innerText = idx + 1;
 
-        // Styling based on state
-        let stateClasses = "bg-slate-200 text-slate-700 hover:bg-slate-300"; // Unanswered
+        let stateClasses = "bg-slate-200 text-slate-700 hover:bg-slate-300";
         if (idx === currentIdx) {
-          stateClasses = "bg-blue-600 text-white font-bold ring-2 ring-blue-400"; // Active
+          stateClasses = "bg-blue-600 text-white font-bold ring-2 ring-blue-400";
         } else if (candidateAnswers[idx] !== undefined) {
-          stateClasses = "bg-emerald-600 text-white font-semibold"; // Answered
+          stateClasses = "bg-emerald-600 text-white font-semibold";
         }
 
         btn.className = `w-full py-2 rounded-lg text-xs transition font-mono ${stateClasses} cursor-pointer`;
-        btn.onclick = () => jumpToQuestion(idx);
+        btn.onclick = () => {
+          currentIdx = idx;
+          renderQuestion();
+          renderPalette();
+        };
         grid.appendChild(btn);
       });
     }
 
-    function jumpToQuestion(idx) {
-      currentIdx = idx;
-      renderQuestion();
-      renderPalette();
-    }
-
-    // --- 6. RENDER CURRENT QUESTION ---
     function renderQuestion() {
       const q = shuffledQuestions[currentIdx];
       document.getElementById('q-counter-badge').innerText = `QUESTION ${currentIdx + 1} OF ${shuffledQuestions.length}`;
@@ -406,7 +367,6 @@
             : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/50'
         }`;
 
-        // Radio circle indicator
         const radioCircle = document.createElement('span');
         radioCircle.className = `w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
           isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300 bg-white'
@@ -451,7 +411,6 @@
       }
     }
 
-    // --- 7. TIMER ---
     function startTimer() {
       timerInterval = setInterval(() => {
         timerSeconds--;
@@ -467,7 +426,6 @@
       }, 1000);
     }
 
-    // --- 8. ANTI CHEATING ---
     function initAntiCheat() {
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('copy', e => e.preventDefault());
@@ -494,20 +452,19 @@
         alert("Maximum tab/window violation reached! Auto-submitting assessment...");
         submitExam("Terminated due to multiple violations.");
       } else {
-        alert(`Warning ${warnings}/3: Switching tabs is not allowed!`);
+        alert(`Warning ${warnings}/3: Switching tabs or minimizing is prohibited!`);
       }
     }
 
-    // --- 9. SUBMISSION ---
     function confirmSubmit() {
       const answeredCount = Object.keys(candidateAnswers).length;
       const total = shuffledQuestions.length;
-      if (confirm(`You have answered ${answeredCount} of ${total} questions. Are you sure you want to finish the test?`)) {
+      if (confirm(`You answered ${answeredCount} of ${total} questions. Are you sure you want to finish the exam?`)) {
         submitExam("Candidate submitted manually");
       }
     }
 
-    function submitExam(reason) {
+    async function submitExam(reason) {
       clearInterval(timerInterval);
 
       let score = 0;
@@ -517,9 +474,7 @@
 
       const percentage = ((score / shuffledQuestions.length) * 100).toFixed(1);
 
-      // Save quietly for admin view only
-      const submissions = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
-      submissions[currentCandidate.reg] = {
+      const submissionData = {
         name: currentCandidate.name,
         reg: currentCandidate.reg,
         dept: currentCandidate.dept,
@@ -528,9 +483,22 @@
         total: shuffledQuestions.length,
         percentage: `${percentage}%`,
         warnings: warnings,
-        time: new Date().toLocaleTimeString()
+        time: new Date().toLocaleTimeString(),
+        date: new Date().toLocaleDateString(),
+        timestamp: Date.now()
       };
-      localStorage.setItem('logix_submissions', JSON.stringify(submissions));
+
+      // 1. Sync to Firebase Firestore Cloud
+      try {
+        await db.collection("logix_submissions").doc(currentCandidate.reg).set(submissionData);
+      } catch (err) {
+        console.error("Firebase sync error:", err);
+      }
+
+      // 2. Local storage backup
+      const localData = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
+      localData[currentCandidate.reg] = submissionData;
+      localStorage.setItem('logix_submissions', JSON.stringify(localData));
 
       // Display locked completion receipt
       document.getElementById('exam-screen').classList.add('hidden');
@@ -541,7 +509,7 @@
       document.getElementById('completion-screen').classList.remove('hidden');
     }
 
-    // --- 10. STAFF ADMIN ---
+    // ================= STAFF ADMIN DASHBOARD =================
     function toggleAdminLogin() {
       const pin = prompt("Enter Staff Admin PIN:");
       if (pin === "admin123") {
@@ -550,67 +518,72 @@
         document.getElementById('completion-screen').classList.add('hidden');
         document.getElementById('timer-badge').classList.add('hidden');
         document.getElementById('admin-screen').classList.remove('hidden');
-        loadAdminTable();
+        listenToLiveAdminData();
       } else if (pin !== null) {
         alert("Incorrect PIN!");
       }
     }
 
     function exitAdmin() {
+      if (adminUnsubscribe) adminUnsubscribe();
       document.getElementById('admin-screen').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
     }
 
-    function loadAdminTable() {
+    let globalAdminList = [];
+
+    function listenToLiveAdminData() {
       const body = document.getElementById('admin-table-body');
-      body.innerHTML = '';
-      const data = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
-      const list = Object.values(data);
 
-      if (list.length === 0) {
-        body.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">No student submissions recorded yet.</td></tr>';
-        return;
-      }
+      // Real-time live Firestore listener
+      adminUnsubscribe = db.collection("logix_submissions").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+        body.innerHTML = '';
+        globalAdminList = [];
 
-      list.forEach(item => {
-        const row = document.createElement('tr');
-        row.className = "hover:bg-slate-50 transition";
-        row.innerHTML = `
-          <td class="p-3 font-mono font-bold text-blue-600">${item.reg}</td>
-          <td class="p-3 font-semibold text-slate-900">${item.name}</td>
-          <td class="p-3 text-slate-600">${item.dept} (${item.year})</td>
-          <td class="p-3 font-semibold text-emerald-600">${item.score}/${item.total}</td>
-          <td class="p-3 font-bold text-slate-900">${item.percentage}</td>
-          <td class="p-3 ${item.warnings > 0 ? 'text-red-500 font-bold' : 'text-slate-400'}">${item.warnings}</td>
-          <td class="p-3 text-slate-500">${item.time}</td>
-        `;
-        body.appendChild(row);
+        if (snapshot.empty) {
+          body.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">No student submissions in Firebase yet.</td></tr>';
+          return;
+        }
+
+        snapshot.forEach((doc) => {
+          const item = doc.data();
+          globalAdminList.push(item);
+          appendRow(body, item);
+        });
+      }, (error) => {
+        console.error("Firestore listener error:", error);
       });
     }
 
-    function exportCSV() {
-      const data = Object.values(JSON.parse(localStorage.getItem('logix_submissions') || '{}'));
-      if (data.length === 0) return alert("No data to export");
+    function appendRow(tbody, item) {
+      const row = document.createElement('tr');
+      row.className = "hover:bg-slate-50 transition";
+      row.innerHTML = `
+        <td class="p-3 font-mono font-bold text-blue-600">${item.reg}</td>
+        <td class="p-3 font-semibold text-slate-900">${item.name}</td>
+        <td class="p-3 text-slate-600">${item.dept} (${item.year})</td>
+        <td class="p-3 font-semibold text-emerald-600">${item.score}/${item.total}</td>
+        <td class="p-3 font-bold text-slate-900">${item.percentage}</td>
+        <td class="p-3 ${item.warnings > 0 ? 'text-red-500 font-bold' : 'text-slate-400'}">${item.warnings}</td>
+        <td class="p-3 text-slate-500">${item.time}</td>
+      `;
+      tbody.appendChild(row);
+    }
 
-      let csv = "Reg No,Name,Dept,Year,Score,Percentage,Violations,Time\n";
-      data.forEach(d => {
-        csv += `"${d.reg}","${d.name}","${d.dept}","${d.year}","${d.score}/${d.total}","${d.percentage}","${d.warnings}","${d.time}"\n`;
+    function exportCSV() {
+      if (globalAdminList.length === 0) return alert("No submission data available to export");
+
+      let csv = "Reg No,Name,Dept,Year,Score,Percentage,Violations,Time,Date\n";
+      globalAdminList.forEach(d => {
+        csv += `"${d.reg}","${d.name}","${d.dept}","${d.year}","${d.score}/${d.total}","${d.percentage}","${d.warnings}","${d.time}","${d.date || ''}"\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = "LOGIX_Results.csv";
+      a.download = "LOGIX_Exam_Results.csv";
       a.click();
-    }
-
-    function clearMyData() {
-      if (confirm("Reset submissions cache for testing?")) {
-        localStorage.removeItem('logix_submissions');
-        alert("Submissions cleared! You can now test with any Register Number.");
-        location.reload();
-      }
     }
   </script>
 </body>
