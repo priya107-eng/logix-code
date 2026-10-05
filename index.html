@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOGIX - Dept of Information Technology</title>
+  <!-- Tailwind CSS CDN for instant styling without npm -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Disable text selection & copy */
+    body {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    pre, code {
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between font-sans">
+
+  <!-- Header -->
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="bg-indigo-600 text-white font-extrabold px-3 py-1 rounded text-xl tracking-wider">LOGIX</div>
+      <div>
+        <h1 class="text-sm font-semibold tracking-wide text-indigo-400 uppercase">Dept of Information Technology</h1>
+        <p class="text-xs text-slate-400">Online Technical Assessment Portal</p>
+      </div>
+    </div>
+    <div>
+      <button id="toggle-admin-btn" onclick="toggleAdminLogin()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded transition">
+        Staff Login
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow flex items-center justify-center p-4">
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen" class="max-w-md w-full bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl">
+      <h2 class="text-2xl font-bold text-white mb-2 text-center">Candidate Login</h2>
+      <p class="text-xs text-slate-400 mb-6 text-center">Enter your credentials to begin the LOGIX assessment</p>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+          <input type="text" id="cand-name" placeholder="John Doe" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Department</label>
+          <input type="text" id="cand-dept" value="Information Technology" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Year</label>
+            <select id="cand-year" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+              <option value="I">1st Year</option>
+              <option value="II">2nd Year</option>
+              <option value="III" selected>3rd Year</option>
+              <option value="IV">4th Year</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Register Number (Unique)</label>
+            <input type="text" id="cand-reg" placeholder="e.g. 7376222IT101" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+        </div>
+
+        <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded text-amber-300 text-xs leading-relaxed mt-4">
+          ⚠️️ <b>Instructions:</b> Total time is 30 mins. Switching tabs or opening dev tools will submit your test. Copy/paste is strictly disabled.
+        </div>
+
+        <button onclick="startExam()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded text-sm transition mt-2">
+          Start Examination
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. EXAM SCREEN -->
+    <div id="exam-screen" class="hidden w-full max-w-4xl bg-slate-800 rounded-xl border border-slate-700 shadow-2xl p-6">
+      <!-- Status Bar -->
+      <div class="flex flex-wrap justify-between items-center pb-4 border-b border-slate-700 mb-6 gap-4">
+        <div>
+          <span id="display-cand" class="font-semibold text-white"></span>
+          <span id="display-reg" class="text-xs text-indigo-400 bg-indigo-950/60 px-2 py-1 rounded ml-2 border border-indigo-800"></span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-xs text-rose-400 font-medium" id="warning-text">Warnings: 0/3</div>
+          <div class="bg-slate-900 px-4 py-2 rounded-lg border border-slate-700 text-lg font-mono font-bold text-amber-400" id="timer-display">
+            30:00
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Content -->
+      <div id="question-box">
+        <div class="flex justify-between items-center mb-2">
+          <span id="q-category" class="text-xs font-bold uppercase tracking-wider text-indigo-400"></span>
+          <span id="q-counter" class="text-xs text-slate-400"></span>
+        </div>
+        <div id="q-text" class="text-base font-medium text-slate-200 mb-4 whitespace-pre-wrap leading-relaxed"></div>
+        <div id="options-container" class="space-y-3 mb-6"></div>
+      </div>
+
+      <!-- Navigation Footer -->
+      <div class="flex justify-between items-center pt-4 border-t border-slate-700">
+        <button id="prev-btn" onclick="prevQuestion()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-4 py-2 rounded disabled:opacity-30">Previous</button>
+        <div class="flex gap-2">
+          <button id="next-btn" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2 rounded">Next</button>
+          <button onclick="submitExam('Candidate submitted manually.')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-5 py-2 rounded font-semibold">Submit Test</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. COMPLETION SCREEN (No Marks Visible) -->
+    <div id="completion-screen" class="hidden max-w-md w-full bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl text-center">
+      <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-emerald-500/30">✓</div>
+      <h2 class="text-2xl font-bold text-white mb-2">Assessment Completed</h2>
+      <p class="text-sm text-slate-300 mb-4">Your responses have been successfully recorded.</p>
+      <div class="p-4 bg-slate-900 border border-slate-700 rounded-lg text-left text-xs space-y-2 text-slate-400">
+        <div><b class="text-slate-200">Register Number:</b> <span id="comp-reg"></span></div>
+        <div><b class="text-slate-200">Candidate Name:</b> <span id="comp-name"></span></div>
+        <div><b class="text-slate-200">Status:</b> Submitted and Locked</div>
+      </div>
+      <p class="text-xs text-slate-500 mt-6">Results will be evaluated and published by the IT department staff.</p>
+    </div>
+
+    <!-- 4. STAFF ADMIN SCREEN -->
+    <div id="admin-screen" class="hidden w-full max-w-5xl bg-slate-800 rounded-xl border border-slate-700 shadow-2xl p-6">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-white">Staff Monitoring Console</h2>
+          <p class="text-xs text-slate-400">LOGIX Exam real-time candidate scores and percentages</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded">Export CSV</button>
+          <button onclick="exitAdmin()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-3 py-2 rounded">Exit Admin</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-900 text-slate-400 border-b border-slate-700">
+              <th class="p-3">Reg No</th>
+              <th class="p-3">Name</th>
+              <th class="p-3">Dept / Year</th>
+              <th class="p-3">Score</th>
+              <th class="p-3">Percentage</th>
+              <th class="p-3">Violations</th>
+              <th class="p-3">Submitted At</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body" class="divide-y divide-slate-700"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="text-center py-3 text-xs text-slate-600 border-t border-slate-800">
+    LOGIX &copy; Department of Information Technology. Anti-cheating proctored environment active.
+  </footer>
+
+  <script src="questions.js"></script>
+  <script>
+    // --- QUESTIONS BANK (C, C++, PYTHON - MEDIUM TO HARD) ---
+    
+
+    // --- START EXAM ---
+    function startExam() {
+      const name = document.getElementById('cand-name').value.trim();
+      const dept = document.getElementById('cand-dept').value.trim();
+      const year = document.getElementById('cand-year').value;
+      const reg = document.getElementById('cand-reg').value.trim().toUpperCase();
+
+      if (!name || !reg) {
+        alert("Please enter both Name and Register Number.");
+        return;
+      }
+
+      // Check if already completed
+      const submissions = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
+      if (submissions[reg]) {
+        alert("You have already completed this assessment. Re-takes are not allowed.");
+        return;
+      }
+
+      currentCandidate = { name, dept, year, reg };
+
+      // Shuffle uniquely per register number
+      const seed = hashString(reg);
+      shuffledQuestions = seededShuffle(RAW_QUESTIONS, seed);
+
+      // UI Switch
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('exam-screen').classList.remove('hidden');
+      document.getElementById('display-cand').innerText = name;
+      document.getElementById('display-reg').innerText = reg;
+
+      // Lock back button
+      history.pushState(null, "", location.href);
+      window.onpopstate = () => {
+        history.pushState(null, "", location.href);
+        alert("Back button is disabled during the exam.");
+      };
+
+      // Anti-cheat listeners
+      initAntiCheat();
+
+      // Start timer
+      renderQuestion();
+      startTimer();
+    }
+
+    // --- ANTI CHEATING GUARDS ---
+    function initAntiCheat() {
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('copy', e => e.preventDefault());
+      document.addEventListener('cut', e => e.preventDefault());
+      document.addEventListener('paste', e => e.preventDefault());
+
+      window.addEventListener('blur', recordViolation);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) recordViolation();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'F12' || (e.ctrlKey && ['c', 'v', 'u', 'p'].includes(e.key.toLowerCase()))) {
+          e.preventDefault();
+        }
+      });
+    }
+
+    function recordViolation() {
+      if (!currentCandidate || document.getElementById('exam-screen').classList.contains('hidden')) return;
+      warnings++;
+      document.getElementById('warning-text').innerText = `Warnings: ${warnings}/3`;
+      if (warnings >= 3) {
+        alert("Maximum tab/window violation reached! Auto submitting...");
+        submitExam("Terminated due to multiple tab-switch violations.");
+      } else {
+        alert(`Warning ${warnings}/3: Do not switch tabs or minimize the window!`);
+      }
+    }
+
+    // --- TIMER ---
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+        const secs = String(timerSeconds % 60).padStart(2, '0');
+        document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval);
+          alert("Time is up! Submitting exam automatically.");
+          submitExam("Time Expired");
+        }
+      }, 1000);
+    }
+
+    // --- QUESTION RENDERING ---
+    function renderQuestion() {
+      const q = shuffledQuestions[currentIdx];
+      document.getElementById('q-category').innerText = q.lang;
+      document.getElementById('q-counter').innerText = `Question ${currentIdx + 1} of ${shuffledQuestions.length}`;
+      document.getElementById('q-text').innerText = q.q;
+
+      const optsBox = document.getElementById('options-container');
+      optsBox.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const isSelected = candidateAnswers[currentIdx] === idx;
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-3.5 rounded-lg border text-sm transition flex items-center justify-between ${
+          isSelected 
+            ? 'bg-indigo-600/20 border-indigo-500 text-white font-medium' 
+            : 'bg-slate-900/60 border-slate-700 text-slate-300 hover:bg-slate-700'
+        }`;
+        btn.innerHTML = `<span>${opt}</span> <span class="text-xs ${isSelected ? 'text-indigo-400' : 'text-slate-500'}">Option ${String.fromCharCode(65 + idx)}</span>`;
+        btn.onclick = () => {
+          candidateAnswers[currentIdx] = idx;
+          renderQuestion();
+        };
+        optsBox.appendChild(btn);
+      });
+
+      document.getElementById('prev-btn').disabled = currentIdx === 0;
+      document.getElementById('next-btn').style.display = (currentIdx === shuffledQuestions.length - 1) ? 'none' : 'block';
+    }
+
+    function prevQuestion() {
+      if (currentIdx > 0) {
+        currentIdx--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentIdx < shuffledQuestions.length - 1) {
+        currentIdx++;
+        renderQuestion();
+      }
+    }
+
+    // --- SUBMISSION ---
+    function submitExam(reason) {
+      clearInterval(timerInterval);
+
+      // Calculate score silently
+      let score = 0;
+      shuffledQuestions.forEach((q, idx) => {
+        if (candidateAnswers[idx] === q.answer) score++;
+      });
+
+      const percentage = ((score / shuffledQuestions.length) * 100).toFixed(1);
+
+      // Save to staff database
+      const submissions = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
+      submissions[currentCandidate.reg] = {
+        name: currentCandidate.name,
+        reg: currentCandidate.reg,
+        dept: currentCandidate.dept,
+        year: currentCandidate.year,
+        score: score,
+        total: shuffledQuestions.length,
+        percentage: `${percentage}%`,
+        warnings: warnings,
+        time: new Date().toLocaleTimeString(),
+        date: new Date().toLocaleDateString()
+      };
+      localStorage.setItem('logix_submissions', JSON.stringify(submissions));
+
+      // Show completion page without marks
+      document.getElementById('exam-screen').classList.add('hidden');
+      document.getElementById('comp-reg').innerText = currentCandidate.reg;
+      document.getElementById('comp-name').innerText = currentCandidate.name;
+      document.getElementById('completion-screen').classList.remove('hidden');
+    }
+
+    // --- ADMIN PANEL ---
+    function toggleAdminLogin() {
+      const pin = prompt("Enter Staff Admin PIN:");
+      if (pin === "admin123") {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('exam-screen').classList.add('hidden');
+        document.getElementById('completion-screen').classList.add('hidden');
+        document.getElementById('admin-screen').classList.remove('hidden');
+        loadAdminTable();
+      } else if (pin !== null) {
+        alert("Incorrect PIN!");
+      }
+    }
+
+    function exitAdmin() {
+      document.getElementById('admin-screen').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+
+    function loadAdminTable() {
+      const body = document.getElementById('admin-table-body');
+      body.innerHTML = '';
+      const data = JSON.parse(localStorage.getItem('logix_submissions') || '{}');
+      const list = Object.values(data);
+
+      if (list.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-500">No submissions yet.</td></tr>';
+        return;
+      }
+
+      list.forEach(item => {
+        const row = document.createElement('tr');
+        row.className = "hover:bg-slate-700/50";
+        row.innerHTML = `
+          <td class="p-3 font-mono font-bold text-indigo-400">${item.reg}</td>
+          <td class="p-3 font-medium text-white">${item.name}</td>
+          <td class="p-3">${item.dept} (${item.year})</td>
+          <td class="p-3 font-semibold text-emerald-400">${item.score}/${item.total}</td>
+          <td class="p-3 font-bold text-amber-400">${item.percentage}</td>
+          <td class="p-3 ${item.warnings > 0 ? 'text-rose-400' : 'text-slate-400'}">${item.warnings}</td>
+          <td class="p-3 text-slate-400">${item.time}</td>
+        `;
+        body.appendChild(row);
+      });
+    }
+
+    function exportCSV() {
+      const data = Object.values(JSON.parse(localStorage.getItem('logix_submissions') || '{}'));
+      if (data.length === 0) return alert("No data to export");
+
+      let csv = "Reg No,Name,Dept,Year,Score,Percentage,Violations,Time\n";
+      data.forEach(d => {
+        csv += `"${d.reg}","${d.name}","${d.dept}","${d.year}","${d.score}/${d.total}","${d.percentage}","${d.warnings}","${d.time}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "LOGIX_Results.csv";
+      a.click();
+    }
+  </script>
+</body>
+</html>
